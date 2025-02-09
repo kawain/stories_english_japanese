@@ -30,6 +30,10 @@ h1 {
 }
 
 .controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   margin: 20px 0;
 }
 
@@ -58,16 +62,21 @@ button:disabled {
   cursor: not-allowed;
 }
 
-#counter {
-  font-size: 24px;
-  text-align: center;
-  margin-top: 20px;
-}
-
 .volume-display {
   display: inline-block;
   min-width: 40px;
   margin-left: 10px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#counter {
+  font-size: 20px;
+  text-align: center;
 }
 
 .word-display {
@@ -75,12 +84,18 @@ button:disabled {
   text-align: center;
 }
 
+.title {
+  margin: 20px 0;
+  font-size: 20px;
+}
+
 .english {
+  margin: 20px 0;
   font-size: 30px;
   font-weight: bold;
-  margin-bottom: 10px;
 }
 
 .japanese {
+  margin: 20px 0;
   font-size: 20px;
 }

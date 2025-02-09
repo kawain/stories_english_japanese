@@ -1,18 +1,21 @@
+const counterDisplay = document.getElementById('counter')
+const titleDisplay = document.getElementById('titleWord')
+const englishDisplay = document.getElementById('englishWord')
+const japaneseDisplay = document.getElementById('japaneseWord')
+
+const startBtn = document.getElementById('startBtn')
+const stopBtn = document.getElementById('stopBtn')
+const showJapanese = document.getElementById('showJapanese')
+const volumeSlider = document.getElementById('volumeSlider')
+const volumeValue = document.getElementById('volumeValue')
+
 let count = 0
 let timerId = null
 let isRunning = false
 let volume = 0.5
 let wordArray = []
 let currentIndex = 0
-
-const startBtn = document.getElementById('startBtn')
-const stopBtn = document.getElementById('stopBtn')
-const counterDisplay = document.getElementById('counter')
-const volumeSlider = document.getElementById('volumeSlider')
-const volumeValue = document.getElementById('volumeValue')
-const englishDisplay = document.getElementById('englishWord')
-const japaneseDisplay = document.getElementById('japaneseWord')
-
+let isJpanese = true
 // Wake Lock 関連の変数・関数
 let wakeLock = null
 
@@ -43,38 +46,26 @@ document.addEventListener('visibilitychange', async () => {
   }
 })
 
-// 配列をシャッフルする（Fisher-Yatesアルゴリズム）
-function shuffleArray (array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const temp = array[i]
-    array[i] = array[j]
-    array[j] = temp
-  }
-}
-
-// CSVファイルを読み込む関数
+// テキストファイルを読み込む関数
 async function loadCSV () {
   try {
     const response = await fetch('./data.txt')
     const data = await response.text()
     const rows = data.split('\n')
-
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].trim() === '') continue
-
       const parts = rows[i].split('★')
-      if (parts.length >= 2) {
+      if (parts.length >= 3) {
         wordArray.push({
-          // 元の配列に追加
-          en1: parts[0].trim(),
-          jp1: parts[1].trim()
+          title: parts[0].trim(),
+          en: parts[1].trim(),
+          jp: parts[2].trim()
         })
       }
     }
     console.log('Loaded words:', wordArray)
   } catch (error) {
-    console.error('Error loading CSV:', error)
+    console.error('Error loading File:', error)
   }
 }
 
@@ -82,16 +73,6 @@ volumeSlider.addEventListener('input', e => {
   volume = e.target.value / 100
   volumeValue.textContent = `${e.target.value}%`
 })
-
-// タイムアウト付きで TTS を実行する関数
-const ttsWithTimeout = (text, lang, timeout = 10000) => {
-  return Promise.race([
-    tts(text, lang), // 実際の TTS 処理
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('TTS timed out')), timeout)
-    ) // タイムアウト処理
-  ])
-}
 
 const tts = (text, lang) => {
   return new Promise((resolve, reject) => {
@@ -101,10 +82,8 @@ const tts = (text, lang) => {
     uttr.rate = 1.0
     uttr.pitch = 1.0
     uttr.volume = volume
-
     uttr.onend = () => resolve()
     uttr.onerror = error => reject(error)
-
     speechSynthesis.speak(uttr)
   })
 }
@@ -112,42 +91,31 @@ const tts = (text, lang) => {
 const speakWord = async () => {
   try {
     const word = wordArray[currentIndex]
+
     count++
     counterDisplay.textContent = `${count}回目`
 
-    // 表示初期化
-    englishDisplay.textContent = word.en1
-    japaneseDisplay.textContent = '?'
+    titleDisplay.textContent = word.title
+    englishDisplay.textContent = word.en
+    japaneseDisplay.textContent = ''
 
-    try {
-      await ttsWithTimeout(word.en1, 'en-US')
-    } catch (error) {
-      console.warn('Skipping due to timeout:', error.message)
-    }
+    await tts(word.en, 'en-US')
 
-    japaneseDisplay.textContent = word.jp1
-
-    try {
-      await ttsWithTimeout(word.jp1, 'ja-JP')
-    } catch (error) {
-      console.warn('Skipping due to timeout:', error.message)
-    }
-
-    try {
-      await ttsWithTimeout(word.en1, 'en-US')
-    } catch (error) {
-      console.warn('Skipping due to timeout:', error.message)
+    if (isJpanese) {
+      japaneseDisplay.textContent = word.jp
+      await tts(word.jp, 'ja-JP')
+      // await tts(word.en, 'en-US')
     }
 
     currentIndex++
 
     if (currentIndex >= wordArray.length) {
-      alert("終了しました。")
+      alert('終了しました。')
       stopStudy()
     }
 
     if (isRunning) {
-      timerId = setTimeout(speakWord, 2000)
+      timerId = setTimeout(speakWord, 1000)
     }
   } catch (error) {
     console.error('Speech synthesis error:', error)
@@ -180,5 +148,9 @@ stopBtn.addEventListener('click', () => {
 })
 
 stopBtn.disabled = true
+
+showJapanese.addEventListener('change', e => {
+  isJpanese = e.target.checked
+})
 
 window.addEventListener('DOMContentLoaded', loadCSV)

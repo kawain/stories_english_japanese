@@ -12,6 +12,7 @@
       <h1>英語日本語聞き流し学習</h1>
       <div id="counter"></div>
       <div class="word-display">
+        <div id="titleWord" class="title"></div>
         <div id="englishWord" class="english"></div>
         <div id="japaneseWord" class="japanese"></div>
       </div>
@@ -19,6 +20,10 @@
         <div class="button-group">
           <button id="startBtn">開始</button>
           <button id="stopBtn">停止</button>
+          <div class="checkbox-group">
+            <input type="checkbox" id="showJapanese" checked />
+            <label for="showJapanese">日本語を表示する</label>
+          </div>
         </div>
         <div class="volume-control">
           <label for="volumeSlider">音量: </label>
