@@ -111,7 +111,10 @@ const speakWord = async () => {
 
     if (currentIndex >= wordArray.length) {
       alert('終了しました。')
+      currentIndex = 0
+      count = 0
       stopStudy()
+      releaseWakeLock() // アプリ停止時に Wake Lock を解除する
     }
 
     if (isRunning) {
@@ -139,8 +142,8 @@ function stopStudy () {
   startBtn.disabled = false
   stopBtn.disabled = true
   releaseWakeLock() // アプリ停止時に Wake Lock を解除する
-  currentIndex = 0
-  count = 0
+  // currentIndex = 0
+  // count = 0
 }
 
 stopBtn.addEventListener('click', () => {
